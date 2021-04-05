@@ -1,5 +1,3 @@
-
-
 // Business Logic for AddressBook ---------
 function AddressBook() {
   this.contacts = {};
@@ -8,12 +6,12 @@ function AddressBook() {
 
 AddressBook.prototype.addContact = function(contact) {
   contact.id = this.assignId();
-  this.contacts[contact.firstName] = contact;
+  this.contacts[contact.id] = contact;
 }
 
 AddressBook.prototype.assignId = function() {
   this.currentId += 1;
-  return currentId;
+  return this.currentId;
 }
 
 AddressBook.prototype.findContact = function(id) {
@@ -30,17 +28,7 @@ AddressBook.prototype.deleteContact = function(id) {
   delete this.contacts[id];
   return true;
 }
-// Business Logic for Contacts ---------
-function Contact(firstName, lastName, phoneNumber, email) {
-  this.firstName = firstName;
-  this.lastName = lastName;
-  this.phoneNumber = phoneNumber;
-  this.email = email
-}
 
-Contact.prototype.fullName = function() {
-  return this.firstName + " " + this.lastName;
-}
 // Business Logic for Contacts ---------
 function Contact(firstName, lastName, phoneNumber) {
   this.firstName = firstName;
@@ -55,17 +43,59 @@ Contact.prototype.fullName = function() {
 // User Interface Logic ---------
 let addressBook = new AddressBook();
 
-$(document).ready(function() {
-  $("form#new-contact").submit(function(event) {
-    event.preventDefault();
-    const inputtedFirstName = $("input#new-first-name").val();
-    const inputtedLastName = $("input#new-last-name").val();
-    const inputtedPhoneNumber = $("input#new-phone-number").val();
-    let newContact = new Contact(inputtedFirstName, inputtedLastName, inputtedPhoneNumber);
-    addressBook.addContact(newContact);
-    console.log(addressBook.contacts);
+function displayContactDetails(addressBookToDisplay) {
+  let contactsList = $("ul#contacts");
+  let htmlForContactInfo = "";
+  Object.keys(addressBookToDisplay.contacts).forEach(function(key) {
+    const contact = addressBookToDisplay.findContact(key);
+    htmlForContactInfo += "<li id=" + contact.id + ">" + contact.firstName + " " + contact.lastName + "</li>";
   });
-});
+  contactsList.html(htmlForContactInfo);
+};
+
+function showContact(contactId) {
+  const contact = addressBook.findContact(contactId);
+  $("#show-contact").show();
+  $(".first-name").html(contact.firstName);
+  $(".last-name").html(contact.lastName);
+  $(".phone-number").html(contact.phoneNumber);
+  let buttons = $("#buttons");
+  buttons.empty();
+  buttons.append("<button class='deleteButton' id=" +  + contact.id + ">Delete</button>");
+}
+
+  // jQuery for an event listener would go here.
+function attachContactListeners() {
+   $("ul#contacts").on("click", "li", function() {
+     showContact(this.id);
+   });
+   $("#buttons").on("click", ".deleteButton", function() {
+    addressBook.deleteContact(this.id);
+    $("#show-contact").hide();
+    displayContactDetails(addressBook);
+  });
+ }
+
+$(document).ready(function() {
+
+ 
+   attachContactListeners(); 
+
+    $("form#new-contact").submit(function(event) {
+      event.preventDefault();
+      const inputtedFirstName = $("input#new-first-name").val();
+      const inputtedLastName = $("input#new-last-name").val();
+      const inputtedPhoneNumber = $("input#new-phone-number").val();
+      let newContact = new Contact(inputtedFirstName, inputtedLastName, inputtedPhoneNumber);
+      $("input#new-first-name").val("");
+      $("input#new-last-name").val("");
+      $("input#new-phone-number").val("");
+      addressBook.addContact(newContact);
+      displayContactDetails(addressBook);
+    });
+  });
+
+
 
 // function Contact(name, address, age , phone) {
 //   this.name = name;
